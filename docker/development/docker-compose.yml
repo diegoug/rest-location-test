@@ -1,0 +1,54 @@
+version: "2.1"
+networks:
+  resttest:
+    external: true
+services:
+  # RESTTEST_MS ---------------------------------------------------------------
+  resttest-MS:
+    image: diegoug/resttest-ms-dev
+    container_name: resttest-ms-dev
+    #command: /bin/sh -c "python3 manage.py runserver 0.0.0.0:${RESTTEST_MS_PORT}"
+    ports:
+      - ${RESTTEST_MS_PORT}:${RESTTEST_MS_PORT}
+      - ${RESTTEST_MS_SSH}:22
+    environment:
+      - POSTGRES_RESTTEST_MS_DATABASE_NAME=${POSTGRES_RESTTEST_MS_DATABASE_NAME}
+      - POSTGRES_RESTTEST_MS_USER=${POSTGRES_RESTTEST_MS_USER}
+      - POSTGRES_RESTTEST_MS_PASSWORD=${POSTGRES_RESTTEST_MS_PASSWORD}
+      - POSTGRES_RESTTEST_MS_HOST=${POSTGRES_RESTTEST_MS_HOST}
+    volumes:
+      - ../../services/resttest_MS:/opt/app
+      - ${LOCAL_SSH}/.ssh/id_rsa.pub:/tmp/authorized_keys:ro
+    depends_on:
+      postgres-resttest-ms:
+        condition: service_healthy
+    networks:
+      resttest:
+        aliases:
+          - ${RESTTEST_MS_HOST}
+  # postgres ------------------------------------------------------------------
+  postgres-resttest-ms:
+    image: postgres:13.1
+    restart: always
+    container_name: postgres-resttest-ms-dev
+    ports:
+      - ${POSTGRES_RESTTEST_MS_PORT}:5432
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_RESTTEST_MS_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_RESTTEST_MS_USER}
+      - POSTGRES_DB=${POSTGRES_RESTTEST_MS_DATABASE_NAME}
+    volumes:
+      - ${LOCAL_VAR}/lib/postgresql- postgres-resttest-ms-dev:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_RESTTEST_MS_USER} -d ${POSTGRES_RESTTEST_MS_DATABASE_NAME}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      resttest:
+        aliases:
+          - ${POSTGRES_RESTTEST_MS_HOST}
