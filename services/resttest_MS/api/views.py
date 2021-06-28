@@ -7,6 +7,8 @@ from django.db import connection
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .models import Service
+
 def get_distance(pint_a, point_b):
     lat1 = float(pint_a['latitude'])
     lon1 = float(pint_a['longitude'])
@@ -47,7 +49,14 @@ class ServiceView(APIView):
         return Response(json_obj)
     
     def post(self, request):
-        return Response({'some': 'data'})
+        Service(
+            date=datetime.now(), 
+            driver=request.POST.get('driver'), 
+            workshop_id=1, 
+            latitude=request.POST.get('latitude'), 
+            longitude=request.POST.get('longitude')
+        ).save()
+        return Response({'ok': True})
 
 class DriverView(APIView):
     def get(self, request):
