@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 
 
 class ServiceView(APIView):
-    def get(self, request):
+    def get(self, request, date):
         return Response({'some': 'data'})
     
     def post(self, request):
