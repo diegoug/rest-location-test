@@ -8,8 +8,8 @@ class Driver(models.Model):
     services = models.ManyToManyField('api.Service')
 
 class Service(models.Model):
-    workshop = models.ManyToManyField(
-        'api.Workshop')
+    workshop = models.ForeignKey(
+        'api.Workshop', on_delete=models.PROTECT)
     date = models.DateTimeField(
         'date', default=timezone.now)
     latitude = models.DecimalField(
